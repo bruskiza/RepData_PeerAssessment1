@@ -1,14 +1,10 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 
-```{r echo=TRUE}
+
+```r
 # load the lattice library
 library(lattice)
 
@@ -33,14 +29,13 @@ unzip(destfile)
 data = read.csv("activity.csv")
 ```
 
-```{r echo=TRUE}
 
+```r
 # disgard the NA values for this
 no_missing_data <- data[!is.na(data$steps), ]
 
 # aggregate the steps over days
 avg_steps_per_day = aggregate(steps ~ date , data = data, FUN = mean, na.rm = TRUE)
-
 ```
 
 ## What is mean total number of steps taken per day?
@@ -48,14 +43,17 @@ avg_steps_per_day = aggregate(steps ~ date , data = data, FUN = mean, na.rm = TR
 ### make a histogram of the number of steps
 
 
-```{r histogram, fig.width=8, fig.height=6}
+
+```r
 histogram(avg_steps_per_day$steps)
 ```
 
+![](PA1_template_files/figure-html/histogram-1.png) 
+
 ### the mean and median steps per day
 
-```{r echo=TRUE}
 
+```r
 # calculate the mean 
 steps_mean = mean(avg_steps_per_day$steps)
 
@@ -63,21 +61,24 @@ steps_mean = mean(avg_steps_per_day$steps)
 steps_median = median(avg_steps_per_day$steps)
 ```
 
-Calculated Mean of steps: `r steps_mean`
+Calculated Mean of steps: 37.3825996
 
-Calculated Median of steps: `r steps_median`
+Calculated Median of steps: 37.3784722
 
 ## What is the average daily activity pattern?
 
 . The time series plot of the 5-minute interval
 
-```{r, fig.width=8, fig.height=6}
+
+```r
 xyplot(ts(avg_steps_per_day$steps))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
 Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-`r max(avg_steps_per_day$steps)`
+73.5902778
 
 ## Imputing missing values
 
