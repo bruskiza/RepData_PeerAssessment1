@@ -35,21 +35,26 @@ data = read.csv("activity.csv")
 
 ```{r echo=TRUE}
 
-# disgard the NA values for this
-no_missing_data <- data[!is.na(data$steps), ]
+# aggregate the total steps over days, disregarding NAs
+total_steps_per_day = aggregate(steps ~ date , data = data, FUN = sum, na.rm = TRUE)
 
-# aggregate the steps over days
-avg_steps_per_day = aggregate(steps ~ date , data = data, FUN = mean, na.rm = TRUE)
+# aggregate the total steps over intervals, disregarding NAs
+total_steps_per_interval = aggregate(steps ~ interval , data = data, FUN = mean, na.rm = TRUE)
 
 ```
 
 ## What is mean total number of steps taken per day?
 
+```{r echo=TRUE}
+total_steps_per_day_mean = mean(no_missing_data$steps)
+```
+
+Mean total steps per day: `r total_steps_per_day_mean`
+
 ### make a histogram of the number of steps
 
-
-```{r histogram, fig.width=8, fig.height=6}
-histogram(avg_steps_per_day$steps)
+```{r histogram, fig.width=8, fig.height=6, fig.path='figure/'}
+histogram(total_steps_per_day$steps)
 ```
 
 ### the mean and median steps per day
@@ -57,30 +62,98 @@ histogram(avg_steps_per_day$steps)
 ```{r echo=TRUE}
 
 # calculate the mean 
-steps_mean = mean(avg_steps_per_day$steps)
+avg_steps_mean = mean(total_steps_per_day$steps)
 
 # calculate the median
-steps_median = median(avg_steps_per_day$steps)
+avg_steps_median = median(total_steps_per_day$steps)
 ```
 
-Calculated Mean of steps: `r steps_mean`
+Calculated Mean of average steps per day: `r avg_steps_mean`
 
-Calculated Median of steps: `r steps_median`
+Calculated Median of average steps per day: `r avg_steps_median`
 
 ## What is the average daily activity pattern?
 
-. The time series plot of the 5-minute interval
+The time series plot of the 5-minute interval
 
-```{r, fig.width=8, fig.height=6}
-xyplot(ts(avg_steps_per_day$steps))
+```{r, fig.width=8, fig.height=6, fig.path='figure/'}
+xyplot(ts(total_steps_per_interval$steps))
 ```
 
 Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-`r max(avg_steps_per_day$steps)`
+```{r echo=TRUE}
+
+```
+
+`r `
 
 ## Imputing missing values
 
+1. The number of missing values in the dataset:
+
+```{r echo=TRUE}
+# find the missing values and count them
+total_missing_steps = length(which(is.na(data$steps)))
+```
+
+The data has: `r total_missing_steps` missing values.
+
+2. Strategy for filling missing values:
+
+```{r echo=TRUE}
+# take the 95th percentile of the good data and use that to substitute out the missing data
+steps_95th = quantile(no_missing_data$steps, 0.95)
+
+```
+
+3. Creating a new data set with the NA steps filled in:
+
+```{r echo=TRUE}
+# get a data set for augmentation
+augmented_data = data
+
+# substitude that into the missing data steps
+augmented_data$steps[is.na(augmented_data$steps)] <- steps_95th
+
+total_augmented_steps_per_day = aggregate(steps ~ date, data = augmented_data, FUN = sum)
+
+```
+
+4. Histogram with Mean and Median calculations:
+
+```{r augmented_histogram, fig.width=8, fig.height=6, fig.path='figure/'}
+histogram(total_augmented_steps_per_day$steps)
+```
+
+```{r echo=TRUE}
+# mean calculation
+augmented_mean = mean(total_augmented_steps_per_day$steps)
+
+# meadian
+augmented_median = mean(total_augmented_steps_per_day$steps)
+```
+
+Mean for augmented data: `r augmented_mean`
+
+Median for augmented data: `r augmented_median`
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+1. Get a new vector that has a weekend or weekday
+
+```{r echo=TRUE}
+wdata = augmented_data
+
+wdata$wend <- as.factor(ifelse(weekdays( as.Date(data$date)) %in% c("Saturday","Sunday"), "Weekend", "Weekday"))
+
+```
+
+2. Plot them:
+
+```{r echo=TRUE, fig.path='figure/'}
+xyplot(ts(wdata[wdata$wend == "Weekend", ]$steps))
+xyplot(ts(wdata[wdata$wend == "Weekday", ]$steps))
+```
+
